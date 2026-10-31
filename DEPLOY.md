@@ -91,11 +91,48 @@ cd android && gradle assembleRelease
 
 ## עדכונים אחרי שינוי בקוד
 
+### פעם אחת: להפוך את התיקייה בשרת לעותק של ה‑repo
+
+אם העלית את הקבצים כ‑ZIP, התיקייה בשרת היא רק קבצים — היא לא יודעת מאיפה הם
+הגיעו. המעבר הזה נעשה פעם אחת, ואחריו כל עדכון הוא פקודה אחת.
+
+**עם cPanel Terminal** (Advanced → Terminal):
+
 ```bash
-cd ~/smartlive && git pull && npm install
+cd ~ && mv smartlive smartlive-old && git clone https://github.com/idanohana/SmartLive.git smartlive
 ```
 
-ואז **Restart** במסך האפליקציה.
+הפרויקט פרטי, אז git יבקש שם משתמש וסיסמה. בשדה הסיסמה מדביקים **Personal
+Access Token** מ‑GitHub (Settings → Developer settings → Personal access tokens
+→ Fine-grained → הרשאת Contents: Read) ולא את סיסמת החשבון.
+
+```bash
+cd ~/smartlive && npm install --omit=dev && chmod +x deploy.sh
+```
+
+כשהכול עובד אפשר למחוק את הגיבוי: `rm -rf ~/smartlive-old`.
+
+### מכאן והלאה: עדכון בפקודה אחת
+
+```bash
+cd ~/smartlive && ./deploy.sh
+```
+
+הסקריפט מושך את הקוד, מתקין תלויות **רק אם** הן השתנו, ומפעיל מחדש דרך
+`tmp/restart.txt` — בלי להיכנס למסך האפליקציה.
+
+### בלי Terminal בכלל: Git Version Control
+
+ב‑cPanel יש **Git™ Version Control**. יוצרים שם מאגר, מדביקים את כתובת ה‑repo,
+ואחר כך יש כפתור **Update from Remote** שמושך את השינויים בלחיצה. לפרויקט פרטי
+צריך להוסיף את מפתח ה‑SSH שה‑cPanel מייצר כ‑**Deploy key** ב‑GitHub
+(Settings → Deploy keys → Add deploy key). אחרי העדכון עדיין צריך **Restart**
+במסך האפליקציה.
+
+### הדרך הישנה: ZIP
+
+עדיין עובדת — מעלים את ה‑ZIP לתיקייה, **Extract** עם דריסה, ואז **Restart**.
+טובה לעדכון חד‑פעמי, מייגעת כשיטה קבועה.
 
 ## מה לבדוק אם השידור החי מקרטע
 

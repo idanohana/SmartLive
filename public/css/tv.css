@@ -1,0 +1,320 @@
+/* =========================================================================
+   SmartLive TV — 10-foot UI for Android TV / smart TV browsers.
+   Sized in vw/vh so it scales from 720p to 4K, with overscan-safe margins.
+   ========================================================================= */
+
+:root {
+  --bg: #07080c;
+  --text: #ffffff;
+  --text-2: #b9c0d0;
+  --text-3: #7a8294;
+  --accent: #6366f1;
+  --accent-2: #22d3ee;
+  --live: #ff3b5c;
+
+  --safe-x: 4.2vw;          /* overscan margin */
+  --rail-gap: 1.25vw;
+  --focus: 0 0 0 0.28vw #fff, 0 1.6vw 3.4vw rgba(0, 0, 0, .75);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--text);
+  font-family: 'Heebo', system-ui, sans-serif;
+  /* A TV is viewed from across the room: nothing small, nothing subtle. */
+  font-size: clamp(14px, 1.15vw, 26px);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  cursor: none;                     /* remote-driven, no pointer */
+}
+
+.screen { position: fixed; inset: 0; display: flex; }
+button, input { font: inherit; color: inherit; }
+:focus { outline: none; }
+
+/* ------------------------------------------------------------- controls --- */
+
+.tv-btn {
+  padding: 1.1vw 2.4vw; border: 0; border-radius: 0.7vw;
+  background: rgba(255, 255, 255, .14); color: #fff;
+  font-size: 1.35vw; font-weight: 700;
+  transition: transform .14s, box-shadow .14s, background .14s;
+}
+.tv-btn.primary { background: linear-gradient(135deg, var(--accent), #8b5cf6); }
+.tv-btn:focus { transform: scale(1.06); box-shadow: var(--focus); background: #fff; color: #11131c; }
+
+.tv-input {
+  width: 100%; padding: 1.1vw 1.4vw;
+  border: 0.14vw solid rgba(255, 255, 255, .16); border-radius: 0.7vw;
+  background: rgba(255, 255, 255, .07); color: #fff;
+  font-size: 1.4vw;
+}
+.tv-input::placeholder { color: var(--text-3); }
+.tv-input:focus { border-color: #fff; background: rgba(255, 255, 255, .14); box-shadow: var(--focus); }
+
+/* ---------------------------------------------------------------- login --- */
+
+#loginScreen { align-items: center; justify-content: center;
+  background: radial-gradient(60vw 40vw at 70% 20%, rgba(99, 102, 241, .28), transparent 65%), var(--bg); }
+.login-card { width: 36vw; text-align: center; }
+.brand-big { font-size: 4.4vw; font-weight: 900; letter-spacing: -0.02em; }
+.brand-big span { background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.login-sub { margin: 0.4vw 0 2.6vw; font-size: 1.3vw; color: var(--text-2); }
+#loginForm { display: flex; flex-direction: column; gap: 1.1vw; }
+#loginForm .tv-btn { margin-top: 0.8vw; }
+.login-error { margin: 0.8vw 0 0; color: #ff8ea1; font-size: 1.2vw; }
+.login-hint { margin-top: 2vw; color: var(--text-3); font-size: 1vw; }
+
+/* -------------------------------------------------------------- sidebar --- */
+
+.sidebar {
+  position: fixed; inset-block: 0; inset-inline-start: 0; z-index: 20;
+  width: 6.5vw; padding: 2vw 0;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5vw;
+  background: linear-gradient(to left, transparent, rgba(5, 6, 10, .96) 65%);
+  transition: width .22s ease;
+}
+.sidebar.open { width: 17vw; align-items: stretch; padding-inline: 1.4vw; }
+.nav-brand {
+  font-size: 2.2vw; font-weight: 900; margin-bottom: 2vw; text-align: center;
+}
+.nav-brand span { color: var(--accent-2); }
+.nav-item {
+  display: flex; align-items: center; gap: 1vw;
+  padding: 1vw; border: 0; border-radius: 0.7vw;
+  background: transparent; color: var(--text-3);
+  font-size: 1.25vw; font-weight: 700; white-space: nowrap;
+  transition: background .15s, color .15s, transform .15s;
+}
+.nav-item .ic { width: 2.4vw; text-align: center; font-size: 1.6vw; flex-shrink: 0; }
+.nav-item .lb { opacity: 0; transition: opacity .18s; }
+.sidebar.open .lb { opacity: 1; }
+.nav-item.active { color: #fff; }
+.nav-item:focus { background: #fff; color: #11131c; transform: scale(1.03); box-shadow: var(--focus); }
+.nav-spacer { flex: 1; }
+
+/* ----------------------------------------------------------------- home --- */
+
+.stage-scroll {
+  flex: 1; height: 100%; overflow-y: auto; overflow-x: hidden;
+  scroll-behavior: smooth; scrollbar-width: none;
+  /* keep everything clear of the fixed nav rail */
+  padding-inline-start: 7.5vw;
+}
+.stage-scroll::-webkit-scrollbar { display: none; }
+
+.hero { position: relative; height: 56vh; display: flex; align-items: flex-end; }
+.hero-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center 18%;
+  transition: background-image .4s;
+}
+/* Channels have a logo, not a backdrop: blow it up, blur it, and let the
+   shade do the rest so the hero is never a black rectangle. */
+.hero-bg.is-logo {
+  background-size: 42vw auto; background-repeat: no-repeat; background-position: 72% 40%;
+  filter: blur(2.2vw) saturate(1.3); opacity: .55; transform: scale(1.1);
+}
+.hero-bg.is-empty { background: radial-gradient(45vw 30vw at 72% 30%, rgba(99, 102, 241, .35), transparent 70%); }
+/* A poster is portrait: stretched across the hero it turns to mush, so it is
+   blurred into a backdrop and shown sharp beside the text instead. */
+.hero-bg.is-poster { filter: blur(1.8vw) saturate(1.25); opacity: .42; transform: scale(1.14); }
+
+.hero-poster {
+  position: absolute; z-index: 1;
+  inset-block-start: 7vh; inset-inline-end: 9vw;
+  width: 15vw; aspect-ratio: 2 / 3; object-fit: cover;
+  border-radius: 0.8vw;
+  box-shadow: 0 1.6vw 4vw rgba(0, 0, 0, .75);
+}
+.hero-shade {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(to top, var(--bg) 2%, rgba(7, 8, 12, .4) 45%, transparent 75%),
+    linear-gradient(to left, transparent 45%, rgba(7, 8, 12, .92) 95%);
+}
+.hero-content { position: relative; padding: 0 var(--safe-x) 3vw; max-width: 58vw; }
+.hero-kicker { font-size: 1.05vw; font-weight: 800; letter-spacing: .22em; color: var(--accent-2); }
+.hero-title { margin: 0.8vw 0 0.6vw; font-size: 3.6vw; font-weight: 900; line-height: 1.05; letter-spacing: -0.02em;
+  text-shadow: 0 0.4vw 2vw rgba(0, 0, 0, .8); }
+.hero-meta { margin: 0 0 0.8vw; font-size: 1.2vw; color: var(--text-2); font-weight: 500; }
+.hero-desc { margin: 0; font-size: 1.15vw; line-height: 1.55; color: var(--text-2);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.rails { padding: 0 0 6vh; }
+.rail { margin-bottom: 2.4vw; }
+.rail-title { margin: 0 var(--safe-x) 0.9vw; font-size: 1.5vw; font-weight: 800; }
+.rail-row {
+  display: flex; gap: var(--rail-gap);
+  padding: 1.2vw var(--safe-x) 1.6vw;
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+}
+.rail-row::-webkit-scrollbar { display: none; }
+
+/* cards */
+.card {
+  position: relative; flex: 0 0 auto; border: 0; padding: 0;
+  background: transparent; color: inherit; text-align: start;
+  transition: transform .18s cubic-bezier(.2, .8, .2, 1);
+}
+.card-art {
+  position: relative; overflow: hidden; border-radius: 0.6vw;
+  background: #12141d; display: grid; place-items: center;
+  box-shadow: 0 0.6vw 1.6vw rgba(0, 0, 0, .5);
+  transition: box-shadow .18s;
+}
+.card.live .card-art { width: 17vw; height: 9.6vw; }
+.card.poster .card-art { width: 12vw; height: 18vw; }
+.card-art img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.card.poster .card-art img { width: 100%; height: 100%; object-fit: cover; }
+.card-fallback { font-size: 1.3vw; font-weight: 800; color: var(--text-3); padding: 0 1vw; text-align: center; }
+
+.card-label { margin-top: 0.7vw; width: 17vw; font-size: 1.05vw; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-2); }
+.card.poster .card-label { width: 12vw; }
+.card-sub { width: 17vw; font-size: 0.92vw; color: var(--text-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card.poster .card-sub { width: 12vw; }
+
+.card:focus { transform: scale(1.09); z-index: 3; }
+.card:focus .card-art { box-shadow: var(--focus); }
+.card:focus .card-label { color: #fff; }
+
+.badge-tv {
+  position: absolute; top: 0.5vw; inset-inline-start: 0.5vw;
+  padding: 0.15vw 0.55vw; border-radius: 0.3vw;
+  background: rgba(0, 0, 0, .7); font-size: 0.78vw; font-weight: 800; color: #cfe9ff;
+}
+.progress-tv { position: absolute; inset-inline: 0; bottom: 0; height: 0.3vw; background: rgba(255,255,255,.2); }
+.progress-tv i { display: block; height: 100%; background: var(--live); }
+
+/* search */
+.search-bar {
+  position: fixed; inset-block-start: 0; inset-inline: 6.5vw 0; z-index: 25;
+  padding: 2vw var(--safe-x);
+  background: linear-gradient(to bottom, rgba(7, 8, 12, .98), rgba(7, 8, 12, .6) 70%, transparent);
+}
+.search-bar .tv-input { max-width: 48vw; }
+
+/* -------------------------------------------------------------- players --- */
+
+.player { background: #000; }
+#tvVideo { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
+
+.player-overlay {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: var(--safe-x);
+  background: linear-gradient(to bottom, rgba(0,0,0,.85), transparent 28%, transparent 72%, rgba(0,0,0,.85));
+  transition: opacity .3s;
+}
+.player-overlay.hide { opacity: 0; }
+.po-top { display: flex; align-items: center; gap: 1.6vw; }
+.po-logo { width: 7vw; height: 4vw; object-fit: contain; }
+.po-name { font-size: 2.4vw; font-weight: 900; }
+.po-now { font-size: 1.2vw; color: var(--text-2); margin-top: 0.3vw; }
+.po-live { margin-inline-start: auto; display: flex; align-items: center; gap: 0.6vw;
+  padding: 0.6vw 1.2vw; border-radius: 2vw; background: rgba(255, 59, 92, .22);
+  font-size: 1vw; font-weight: 800; color: #ffd9e0; }
+.po-live .dot { width: 0.6vw; height: 0.6vw; border-radius: 50%; background: var(--live); }
+.po-hint { font-size: 1.05vw; color: var(--text-3); text-align: center; }
+
+.zap-list {
+  position: absolute; inset-block: 0; inset-inline-end: 0; z-index: 8;
+  width: 26vw; padding: 2vw 1.4vw; overflow-y: auto; scrollbar-width: none;
+  background: linear-gradient(to left, rgba(5, 6, 10, .97), rgba(5, 6, 10, .8));
+}
+.zap-list::-webkit-scrollbar { display: none; }
+.zap-item {
+  display: flex; align-items: center; gap: 1vw; width: 100%;
+  padding: 0.8vw; margin-bottom: 0.4vw; border: 0; border-radius: 0.6vw;
+  background: transparent; color: var(--text-2); text-align: start;
+  font-size: 1.15vw; font-weight: 600;
+}
+.zap-item img { width: 4.4vw; height: 2.6vw; object-fit: contain; flex-shrink: 0; }
+.zap-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zap-item.playing { color: var(--accent-2); }
+.zap-item:focus { background: #fff; color: #11131c; box-shadow: var(--focus); }
+
+.buffering { position: absolute; inset: 0; display: grid; place-items: center; z-index: 6; }
+.buffering .ring {
+  width: 5vw; height: 5vw; border-radius: 50%;
+  border: 0.35vw solid rgba(255, 255, 255, .16); border-top-color: var(--accent-2);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.player-error {
+  position: absolute; inset: 0; z-index: 9;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.4vw;
+  background: rgba(0, 0, 0, .9); text-align: center; padding: var(--safe-x);
+}
+.player-error h2 { margin: 0; font-size: 2.4vw; }
+.player-error p { margin: 0; font-size: 1.3vw; color: var(--text-2); max-width: 50vw; }
+
+/* vod */
+.vod-head {
+  position: absolute; inset-block-start: 0; inset-inline: 0; z-index: 6;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.6vw var(--safe-x); font-size: 1.4vw; font-weight: 800;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, .9), transparent);
+  transition: opacity .3s;
+}
+.vod-head.hide { opacity: 0; }
+.vod-head-hint { font-size: 1vw; font-weight: 500; color: var(--text-3); }
+.vod-frame { position: absolute; inset: 0; }
+.vod-frame iframe { width: 100%; height: 100%; border: 0; display: block; background: #000; }
+
+.ep-picker {
+  position: absolute; inset-block-end: 0; inset-inline: 0; z-index: 7;
+  padding: 2vw 0 2.4vw;
+  background: linear-gradient(to top, rgba(5, 6, 10, .98), rgba(5, 6, 10, .75) 70%, transparent);
+}
+.ep-picker h2 { margin: 0 var(--safe-x) 1vw; font-size: 1.6vw; }
+.ep-seasons { display: flex; gap: 0.8vw; padding: 0 var(--safe-x) 1vw; overflow-x: auto; scrollbar-width: none; }
+.ep-seasons::-webkit-scrollbar { display: none; }
+.season-chip {
+  flex: 0 0 auto; padding: 0.7vw 1.6vw; border: 0; border-radius: 2vw;
+  background: rgba(255, 255, 255, .12); color: var(--text-2);
+  font-size: 1.1vw; font-weight: 700;
+}
+.season-chip.active { background: rgba(99, 102, 241, .45); color: #fff; }
+.season-chip:focus { background: #fff; color: #11131c; box-shadow: var(--focus); transform: scale(1.05); }
+.ep-rail { display: flex; gap: var(--rail-gap); padding: 0.8vw var(--safe-x) 1.2vw; overflow-x: auto; scrollbar-width: none; }
+.ep-rail::-webkit-scrollbar { display: none; }
+.ep-card { flex: 0 0 auto; width: 16vw; border: 0; padding: 0; background: transparent; color: inherit; text-align: start; }
+.ep-card .thumb { width: 16vw; height: 9vw; border-radius: 0.5vw; overflow: hidden; background: #12141d;
+  display: grid; place-items: center; font-size: 1.6vw; font-weight: 800; color: var(--text-3); }
+.ep-card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.ep-card .t { margin-top: 0.5vw; font-size: 1vw; font-weight: 700; color: var(--text-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; unicode-bidi: plaintext; }
+.ep-card.playing .t { color: var(--accent-2); }
+.ep-card:focus { transform: scale(1.07); }
+.ep-card:focus .thumb { box-shadow: var(--focus); }
+.ep-card:focus .t { color: #fff; }
+
+/* --------------------------------------------------------------- toasts --- */
+
+.toast-tv {
+  position: fixed; inset-block-end: 3vh; inset-inline-start: 50%; transform: translateX(50%);
+  z-index: 50; padding: 1vw 2vw; border-radius: 0.7vw;
+  background: rgba(15, 17, 26, .96); border: 0.1vw solid rgba(255, 255, 255, .14);
+  font-size: 1.2vw; box-shadow: 0 1vw 3vw rgba(0, 0, 0, .7);
+}
+
+/* Phones/tablets opening /tv: keep it usable rather than microscopic. */
+@media (max-aspect-ratio: 1/1) {
+  html, body { font-size: 15px; }
+  .hero { height: 42vh; }
+  .hero-title { font-size: 7vw; }
+  .card.live .card-art { width: 44vw; height: 25vw; }
+  .card.poster .card-art { width: 30vw; height: 45vw; }
+  .card-label, .card-sub { width: 44vw; font-size: 3.2vw; }
+  .card.poster .card-label, .card.poster .card-sub { width: 30vw; }
+  .rail-title { font-size: 4.4vw; }
+  .sidebar { width: 14vw; }
+}

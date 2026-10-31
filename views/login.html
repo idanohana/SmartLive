@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#07090f" />
+<title>כניסה · SmartLive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/css/styles.css?v=8" />
+<link rel="stylesheet" href="/css/auth.css?v=8" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236366f1'/%3E%3Cpath d='M26 20l18 12-18 12z' fill='white'/%3E%3C/svg%3E" />
+</head>
+<body class="auth-body">
+
+<main class="auth-card">
+  <div class="auth-brand">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7.5l8 4.5-8 4.5z" fill="currentColor" stroke="none"/></svg>
+    </span>
+    <div>
+      <strong>Smart<span>Live</span></strong>
+      <small>טלוויזיה בשידור חי, סרטים וסדרות</small>
+    </div>
+  </div>
+
+  <form id="loginForm" autocomplete="on">
+    <label class="field">
+      <span>שם משתמש</span>
+      <input id="username" name="username" type="text" autocomplete="username" required autofocus spellcheck="false" />
+    </label>
+
+    <label class="field">
+      <span>סיסמה</span>
+      <div class="field-with-button">
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+        <button type="button" class="reveal" id="reveal" aria-label="הצג סיסמה">
+          <svg viewBox="0 0 24 24"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.6"/></svg>
+        </button>
+      </div>
+    </label>
+
+    <p class="auth-error" id="error" hidden></p>
+
+    <button class="btn primary wide" id="submit" type="submit">כניסה</button>
+  </form>
+
+  <p class="auth-foot">אין לך חשבון? פנה למנהל המערכת כדי שייצור לך אחד.</p>
+</main>
+
+<script>
+const form = document.getElementById('loginForm');
+const errorBox = document.getElementById('error');
+const submit = document.getElementById('submit');
+
+document.getElementById('reveal').addEventListener('click', () => {
+  const field = document.getElementById('password');
+  field.type = field.type === 'password' ? 'text' : 'password';
+});
+
+form.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  errorBox.hidden = true;
+  submit.disabled = true;
+  submit.textContent = 'מתחבר…';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'ההתחברות נכשלה');
+    location.href = data.user?.role === 'admin' && !data.user.playlists.length ? '/admin' : '/';
+  } catch (err) {
+    errorBox.textContent = err.message;
+    errorBox.hidden = false;
+    submit.disabled = false;
+    submit.textContent = 'כניסה';
+  }
+});
+</script>
+</body>
+</html>

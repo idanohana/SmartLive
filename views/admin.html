@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#07090f" />
+<title>ניהול · SmartLive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/css/styles.css?v=8" />
+<link rel="stylesheet" href="/css/admin.css?v=8" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236366f1'/%3E%3Cpath d='M26 20l18 12-18 12z' fill='white'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7.5l8 4.5-8 4.5z" fill="currentColor" stroke="none"/></svg>
+    </span>
+    <span class="brand-text">
+      <strong>Smart<span>Live</span></strong>
+      <small>ניהול משתמשים</small>
+    </span>
+  </a>
+
+  <div class="topbar-right">
+    <a class="btn" href="/">חזרה לאתר</a>
+    <button class="btn" id="logout">יציאה</button>
+  </div>
+</header>
+
+<main class="admin">
+
+  <section class="stats" id="stats"></section>
+
+  <section class="panel">
+    <div class="panel-head-row">
+      <h2>משתמשים</h2>
+      <button class="btn primary" id="newUserBtn">+ משתמש חדש</button>
+    </div>
+
+    <form class="create-form" id="createForm" hidden>
+      <div class="form-grid">
+        <label class="field">
+          <span>שם משתמש</span>
+          <input id="nuUsername" type="text" required spellcheck="false" placeholder="dani" />
+        </label>
+        <label class="field">
+          <span>שם לתצוגה</span>
+          <input id="nuDisplay" type="text" placeholder="דני כהן" />
+        </label>
+        <label class="field">
+          <span>סיסמה</span>
+          <div class="field-with-button">
+            <input id="nuPassword" type="text" required spellcheck="false" />
+            <button type="button" class="reveal" id="nuGen" title="הגרל סיסמה">⟳</button>
+          </div>
+        </label>
+        <label class="field">
+          <span>הרשאה</span>
+          <select id="nuRole">
+            <option value="user">משתמש</option>
+            <option value="admin">מנהל</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="divider"><span>פלייליסט לייב (אופציונלי)</span></div>
+
+      <div class="form-grid">
+        <label class="field wide">
+          <span>קישור הפלייליסט</span>
+          <input id="nuUrl" type="text" dir="ltr" spellcheck="false"
+                 placeholder="http://host:80/get.php?username=USER&password=PASS&type=m3u_plus" />
+        </label>
+        <label class="field">
+          <span>שם הפלייליסט</span>
+          <input id="nuPlName" type="text" placeholder="המנוי של דני" />
+        </label>
+        <label class="field">
+          <span>חיבורים במקביל</span>
+          <input id="nuMax" type="number" min="1" max="10" value="1" />
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn" id="nuTest">בדוק חיבור</button>
+        <span class="test-result" id="nuTestResult"></span>
+        <div class="grow"></div>
+        <button type="button" class="btn" id="nuCancel">ביטול</button>
+        <button type="submit" class="btn primary">צור משתמש</button>
+      </div>
+    </form>
+
+    <div id="users" class="users"></div>
+  </section>
+</main>
+
+<div class="toasts" id="toasts"></div>
+
+<template id="userTpl">
+  <article class="user-card">
+    <div class="user-head">
+      <span class="avatar"></span>
+      <div class="user-id">
+        <div class="user-name">
+          <strong class="u-display"></strong>
+          <span class="badge u-role"></span>
+          <span class="badge u-state"></span>
+        </div>
+        <div class="user-sub"><span class="u-username" dir="ltr"></span> · <span class="u-last"></span></div>
+      </div>
+      <div class="user-actions">
+        <button class="btn small u-toggle"></button>
+        <button class="btn small u-edit">עריכה</button>
+        <button class="btn small danger u-delete">מחיקה</button>
+      </div>
+    </div>
+
+    <div class="playlists"></div>
+
+    <form class="edit-form" hidden>
+      <div class="form-grid">
+        <label class="field">
+          <span>שם לתצוגה</span>
+          <input class="e-display" type="text" />
+        </label>
+        <label class="field">
+          <span>הרשאה</span>
+          <select class="e-role">
+            <option value="user">משתמש</option>
+            <option value="admin">מנהל</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>סיסמה חדשה</span>
+          <input class="e-password" type="text" spellcheck="false" placeholder="להשאיר ריק = בלי שינוי" />
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn e-add-playlist">+ הוסף פלייליסט</button>
+        <div class="grow"></div>
+        <button type="button" class="btn e-cancel">סגור</button>
+        <button type="submit" class="btn primary">שמור</button>
+      </div>
+    </form>
+  </article>
+</template>
+
+<template id="playlistTpl">
+  <div class="playlist-row">
+    <div class="pl-info">
+      <strong class="pl-name"></strong>
+      <span class="pl-meta" dir="ltr"></span>
+    </div>
+    <div class="pl-actions">
+      <button class="btn small pl-edit">ערוך</button>
+      <button class="btn small danger pl-delete">הסר</button>
+    </div>
+
+    <form class="pl-form" hidden>
+      <div class="form-grid">
+        <label class="field wide">
+          <span>קישור הפלייליסט</span>
+          <input class="pf-url" type="text" dir="ltr" spellcheck="false"
+                 placeholder="http://host:80/get.php?username=USER&password=PASS" />
+        </label>
+        <label class="field">
+          <span>שם</span>
+          <input class="pf-name" type="text" />
+        </label>
+        <label class="field">
+          <span>חיבורים במקביל</span>
+          <input class="pf-max" type="number" min="1" max="10" value="1" />
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn pf-test">בדוק חיבור</button>
+        <span class="test-result pf-result"></span>
+        <div class="grow"></div>
+        <button type="button" class="btn pf-cancel">ביטול</button>
+        <button type="submit" class="btn primary">שמור</button>
+      </div>
+    </form>
+  </div>
+</template>
+
+<script src="/js/admin.js?v=8"></script>
+</body>
+</html>

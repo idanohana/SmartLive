@@ -1,0 +1,36 @@
+<!-- Android TV home-screen banner: 320x180 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+
+    <path android:pathData="M0,0h320v180h-320z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:startX="0" android:startY="0"
+                android:endX="320" android:endY="180"
+                android:type="linear">
+                <item android:color="#0B0D16" android:offset="0" />
+                <item android:color="#1B1D3A" android:offset="0.55" />
+                <item android:color="#0B0D16" android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- play mark -->
+    <path
+        android:fillColor="#6366F1"
+        android:pathData="M40,62 L86,62 A14,14 0 0 1 100,76 L100,104 A14,14 0 0 1 86,118 L40,118 A14,14 0 0 1 26,104 L26,76 A14,14 0 0 1 40,62 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M56,78 L78,90 L56,102 Z" />
+
+    <!-- "SmartLive" set as paths so the banner needs no font -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M120,84 h92 v9 h-92 z M120,99 h64 v9 h-64 z" />
+    <path
+        android:fillColor="#22D3EE"
+        android:pathData="M190,99 h22 v9 h-22 z" />
+</vector>

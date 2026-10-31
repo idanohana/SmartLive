@@ -1,0 +1,184 @@
+/* =========================================================================
+   SmartLive — movies & series section
+   ========================================================================= */
+
+/* ---------------------------------------------------------- mode switch --- */
+
+.mode-switch {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+  padding: 3px; margin-bottom: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+}
+.mode-switch button {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  height: 36px; border: 0; border-radius: 9px;
+  background: transparent; color: var(--text-3);
+  font-size: 12.5px; font-weight: 600; white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+.mode-switch button span { font-size: 13px; }
+.mode-switch button:hover { color: var(--text-2); }
+.mode-switch button.active {
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  color: #fff; box-shadow: 0 6px 18px rgba(99, 102, 241, .35);
+}
+
+/* --------------------------------------------------------------- banner --- */
+
+.vod-banner {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: space-between; gap: 22px;
+  padding: 26px 28px; margin-bottom: 26px;
+  border: 1px solid var(--line); border-radius: 22px;
+  background:
+    radial-gradient(700px 240px at 0% 0%, rgba(139, 92, 246, .24), transparent 70%),
+    radial-gradient(500px 200px at 100% 100%, rgba(34, 211, 238, .16), transparent 70%),
+    linear-gradient(120deg, var(--surface-2), var(--surface));
+}
+.vod-banner h1 { margin: 8px 0 6px; font-size: 28px; font-weight: 900; letter-spacing: -.02em; }
+.vod-banner p { margin: 0; color: var(--text-2); font-size: 13.5px; }
+
+.shield {
+  display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+  padding: 9px 14px; border-radius: 999px;
+  background: rgba(39, 217, 128, .12); border: 1px solid rgba(39, 217, 128, .35);
+  color: #8ff0bf; font-size: 12.5px; font-weight: 600; white-space: nowrap;
+}
+.shield svg { width: 17px; height: 17px; }
+.shield.mini { padding: 6px 11px; font-size: 11.5px; }
+
+/* ---------------------------------------------------------------- rows --- */
+
+.shelf { margin-bottom: 30px; }
+.shelf-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.shelf-head h3 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.01em; }
+.shelf-row {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 168px;
+  gap: 14px; overflow-x: auto; padding-bottom: 10px;
+  scroll-snap-type: x proximity; scrollbar-width: thin;
+}
+.shelf-row > * { scroll-snap-align: start; }
+
+.poster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 16px; }
+
+.poster {
+  border: 0; padding: 0; background: transparent; color: inherit; text-align: start;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.poster-art {
+  position: relative; aspect-ratio: 2 / 3; overflow: hidden;
+  border-radius: 14px; border: 1px solid var(--line);
+  background: linear-gradient(170deg, var(--surface-2), var(--bg-2));
+  display: grid; place-items: center;
+  transition: transform .2s cubic-bezier(.2,.8,.2,1), border-color .2s, box-shadow .2s;
+}
+.poster:hover .poster-art { transform: translateY(-5px) scale(1.015); border-color: #3b4258; box-shadow: var(--shadow); }
+.poster:focus-visible .poster-art { outline: 2px solid var(--accent); outline-offset: 2px; }
+.poster-art img { width: 100%; height: 100%; object-fit: cover; }
+.poster-fallback { font-size: 30px; opacity: .45; }
+
+.poster-play {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: linear-gradient(to top, rgba(4,5,10,.85), rgba(4,5,10,.25) 55%, transparent);
+  opacity: 0; transition: opacity .2s;
+}
+.poster-play svg { width: 26px; height: 26px; color: #fff; filter: drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
+.poster:hover .poster-play { opacity: 1; }
+
+.type-badge { position: absolute; top: 8px; inset-inline-start: 8px; }
+.ep-badge { position: absolute; bottom: 8px; inset-inline-start: 8px; color: #dfe1ff; border-color: rgba(99,102,241,.45); background: rgba(99,102,241,.3); }
+
+.poster-title { font-size: 13.5px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.poster-meta { font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.poster.skeleton { height: 280px; border-radius: 14px; background: linear-gradient(100deg, var(--surface) 30%, var(--surface-2) 50%, var(--surface) 70%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+.skeleton-text { width: 180px; height: 18px; border-radius: 6px; background: var(--surface-2); }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* -------------------------------------------------------------- player --- */
+
+.vod-layer {
+  position: fixed; inset: 0; z-index: 95;
+  display: flex; flex-direction: column;
+  background: #04050a;
+  animation: fade .2s ease;
+}
+.vod-stage { background: #000; }
+.frame-holder { position: absolute; inset: 0; }
+.frame-holder iframe { width: 100%; height: 100%; border: 0; display: block; background: #000; }
+
+#vodWatchlist.on { color: var(--gold); border-color: rgba(245, 181, 68, .45); }
+#vodWatchlist.on svg { fill: var(--gold); }
+
+.season-bar { display: flex; align-items: center; gap: 10px; padding: 12px 12px; }
+.season-bar label { font-size: 12.5px; color: var(--text-3); font-weight: 600; }
+.season-bar select {
+  flex: 1; height: 36px; padding: 0 10px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--surface); color: var(--text); font: inherit; font-size: 13px;
+  outline: none;
+}
+.season-bar select:focus { border-color: var(--accent); }
+
+.ep-row {
+  display: flex; gap: 11px; width: 100%; align-items: center;
+  padding: 8px; margin-bottom: 4px; border: 0; border-radius: 12px;
+  background: transparent; color: var(--text-2); text-align: start;
+}
+.ep-row:hover { background: var(--surface); color: var(--text); }
+.ep-row.active { background: var(--accent-soft); color: #fff; box-shadow: inset 0 0 0 1px rgba(99,102,241,.35); }
+.ep-thumb {
+  width: 72px; height: 44px; flex-shrink: 0; overflow: hidden;
+  border-radius: 8px; background: var(--bg-2);
+  display: grid; place-items: center; color: var(--text-3); font-size: 14px;
+}
+.ep-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.ep-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ep-title { font-size: 13px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ep-meta { font-size: 11px; color: var(--text-3); }
+
+.vod-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 12px 18px; flex-shrink: 0;
+  border-top: 1px solid var(--line-soft); background: rgba(7, 9, 15, .9);
+}
+.vod-bar-label { font-size: 13.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vod-bar .btn[disabled] { opacity: .35; pointer-events: none; }
+
+@media (max-width: 920px) {
+  .vod-banner { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .vod-banner h1 { font-size: 22px; }
+  .shelf-row { grid-auto-columns: 132px; }
+  .poster-grid { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 12px; }
+  .vod-bar-label { display: none; }
+}
+
+/* --------------------------------------------------------- click shield --- */
+
+.click-shield {
+  position: absolute; inset: 0; z-index: 4;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: radial-gradient(600px 300px at 50% 45%, rgba(10, 12, 22, .72), rgba(4, 5, 10, .94));
+  cursor: pointer; text-align: center; padding: 20px;
+  opacity: 0; transition: opacity .25s;
+}
+.click-shield.armed { opacity: 1; }
+.click-shield p { margin: 4px 0 0; font-size: 17px; font-weight: 700; }
+.click-shield small { max-width: 320px; font-size: 12px; line-height: 1.6; color: var(--text-3); }
+.shield-play {
+  width: 84px; height: 84px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .6);
+  color: #fff;
+  transition: transform .18s;
+}
+.shield-play svg { width: 34px; height: 34px; margin-inline-start: 5px; }
+.click-shield:hover .shield-play { transform: scale(1.06); }
+
+/* Latin titles inside an RTL page: let each line pick its own direction so
+   "1. The Heirs of the Dragon" does not render as "The Heirs of the Dragon .1". */
+.poster-title, .poster-meta, .ep-title, .ep-meta, .card-title, .card-sub, #vodTitle {
+  unicode-bidi: plaintext;
+  text-align: start;
+}

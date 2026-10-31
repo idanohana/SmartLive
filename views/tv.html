@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#000000" />
+<title>SmartLive TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/css/tv.css?v=3" />
+</head>
+<body class="tv">
+
+<!-- ================================ login ================================ -->
+<section class="screen" id="loginScreen" hidden>
+  <div class="login-card">
+    <div class="brand-big">Smart<span>Live</span></div>
+    <p class="login-sub">התחבר כדי להתחיל לצפות</p>
+    <form id="loginForm" autocomplete="off">
+      <input class="tv-input focusable" id="loginUser" type="text" placeholder="שם משתמש" autocomplete="username" />
+      <input class="tv-input focusable" id="loginPass" type="password" placeholder="סיסמה" autocomplete="current-password" />
+      <button class="tv-btn primary focusable" id="loginBtn" type="submit">כניסה</button>
+      <p class="login-error" id="loginError" hidden></p>
+    </form>
+    <p class="login-hint" id="serverHint"></p>
+  </div>
+</section>
+
+<!-- ================================= home ================================= -->
+<section class="screen" id="homeScreen" hidden>
+
+  <nav class="sidebar" id="tvNav">
+    <div class="nav-brand">S<span>L</span></div>
+    <button class="nav-item focusable active" data-nav="home">
+      <span class="ic">⌂</span><span class="lb">בית</span>
+    </button>
+    <button class="nav-item focusable" data-nav="live">
+      <span class="ic">📡</span><span class="lb">שידור חי</span>
+    </button>
+    <button class="nav-item focusable" data-nav="movies">
+      <span class="ic">🎬</span><span class="lb">סרטים</span>
+    </button>
+    <button class="nav-item focusable" data-nav="series">
+      <span class="ic">📺</span><span class="lb">סדרות</span>
+    </button>
+    <button class="nav-item focusable" data-nav="search">
+      <span class="ic">🔍</span><span class="lb">חיפוש</span>
+    </button>
+    <div class="nav-spacer"></div>
+    <button class="nav-item focusable" data-nav="logout">
+      <span class="ic">⏻</span><span class="lb">יציאה</span>
+    </button>
+  </nav>
+
+  <div class="stage-scroll" id="stageScroll">
+    <header class="hero" id="hero">
+      <div class="hero-bg" id="heroBg"></div>
+      <div class="hero-shade"></div>
+      <img class="hero-poster" id="heroPoster" alt="" hidden />
+      <div class="hero-content">
+        <div class="hero-kicker" id="heroKicker">SmartLive</div>
+        <h1 class="hero-title" id="heroTitle">טוען…</h1>
+        <p class="hero-meta" id="heroMeta"></p>
+        <p class="hero-desc" id="heroDesc"></p>
+      </div>
+    </header>
+
+    <div class="rails" id="rails"></div>
+  </div>
+
+  <div class="search-bar" id="searchBar" hidden>
+    <input class="tv-input focusable" id="searchInput" type="search" placeholder="חפש סרט, סדרה או ערוץ…" />
+  </div>
+</section>
+
+<!-- =============================== live player =========================== -->
+<section class="screen player" id="liveScreen" hidden>
+  <video id="tvVideo" playsinline></video>
+
+  <div class="player-overlay" id="liveOverlay">
+    <div class="po-top">
+      <img class="po-logo" id="poLogo" alt="" />
+      <div>
+        <div class="po-name" id="poName"></div>
+        <div class="po-now" id="poNow"></div>
+      </div>
+      <div class="po-live"><span class="dot"></span>שידור חי</div>
+    </div>
+    <div class="po-hint">▲▼ החלפת ערוץ · OK רשימת ערוצים · חזרה ליציאה</div>
+  </div>
+
+  <div class="zap-list" id="zapList" hidden></div>
+  <div class="buffering" id="buffering"><div class="ring"></div></div>
+  <div class="player-error" id="playerError" hidden>
+    <h2>לא הצלחנו להפעיל את הערוץ</h2>
+    <p id="playerErrorText"></p>
+    <button class="tv-btn primary focusable" id="retryBtn">נסה שוב</button>
+  </div>
+</section>
+
+<!-- =============================== vod player ============================ -->
+<section class="screen player" id="vodScreen" hidden>
+  <div class="vod-head" id="vodHead">
+    <span id="vodHeadTitle"></span>
+    <span class="vod-head-hint">חזרה ליציאה</span>
+  </div>
+  <div class="vod-frame" id="vodFrame"></div>
+  <div class="ep-picker" id="epPicker" hidden>
+    <h2 id="epPickerTitle">בחר פרק</h2>
+    <div class="ep-seasons" id="epSeasons"></div>
+    <div class="ep-rail" id="epRail"></div>
+  </div>
+</section>
+
+<div class="toast-tv" id="tvToast" hidden></div>
+
+<script src="/vendor/mpegts.js"></script>
+<script src="/js/tv.js?v=3"></script>
+</body>
+</html>

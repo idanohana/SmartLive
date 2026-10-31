@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>התקנה · SmartLive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/css/styles.css?v=8" />
+<link rel="stylesheet" href="/css/auth.css?v=8" />
+</head>
+<body class="auth-body">
+
+<main class="auth-card wide-card">
+  <div class="auth-brand">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7.5l8 4.5-8 4.5z" fill="currentColor" stroke="none"/></svg>
+    </span>
+    <div>
+      <strong>Smart<span>Live</span></strong>
+      <small>שלב אחרון לפני שמתחילים</small>
+    </div>
+  </div>
+
+  <p class="setup-text">
+    הטבלאות עדיין לא קיימות במסד הנתונים. העתק את ה‑SQL שלמטה,
+    הדבק אותו ב‑<b>SQL Editor</b> של פרויקט ה‑Supabase שלך והרץ אותו — פעם אחת בלבד.
+  </p>
+
+  <div class="sql-box">
+    <button class="btn" id="copy">העתק</button>
+    <pre id="sql" dir="ltr">טוען…</pre>
+  </div>
+
+  <div class="setup-actions">
+    <button class="btn primary" id="check">בדוק שוב</button>
+    <span id="status" class="setup-status"></span>
+  </div>
+</main>
+
+<script>
+const sqlBox = document.getElementById('sql');
+const statusEl = document.getElementById('status');
+
+fetch('/api/setup/sql').then((r) => r.text()).then((t) => { sqlBox.textContent = t; });
+
+document.getElementById('copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(sqlBox.textContent);
+    statusEl.textContent = 'הועתק ללוח.';
+  } catch {
+    statusEl.textContent = 'לא הצלחנו להעתיק — סמן ידנית.';
+  }
+});
+
+document.getElementById('check').addEventListener('click', async () => {
+  statusEl.textContent = 'בודק…';
+  const { ready, seeded } = await fetch('/api/setup/status').then((r) => r.json());
+  if (ready) {
+    statusEl.textContent = seeded
+      ? `נוצר חשבון מנהל: ${seeded.username} / ${seeded.password} — רשום את זה.`
+      : 'מצוין, הטבלאות קיימות.';
+    setTimeout(() => location.href = '/login', seeded ? 6000 : 900);
+  } else {
+    statusEl.textContent = 'עדיין לא רואים את הטבלאות. ודא שה‑SQL רץ בהצלחה.';
+  }
+});
+</script>
+</body>
+</html>

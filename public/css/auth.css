@@ -1,0 +1,70 @@
+/* =========================================================================
+   SmartLive — login & setup screens
+   ========================================================================= */
+
+.auth-body {
+  display: grid; place-items: center; min-height: 100vh; padding: 24px;
+}
+
+.auth-card {
+  width: 100%; max-width: 410px;
+  padding: 32px 30px 26px;
+  border: 1px solid var(--line); border-radius: 22px;
+  background: linear-gradient(150deg, var(--surface-2), var(--surface));
+  box-shadow: var(--shadow);
+}
+.auth-card.wide-card { max-width: 760px; }
+
+.auth-brand { display: flex; align-items: center; gap: 13px; margin-bottom: 26px; }
+.auth-brand strong { display: block; font-size: 21px; font-weight: 900; letter-spacing: -.02em; }
+.auth-brand strong span { background: linear-gradient(90deg, var(--accent-2), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.auth-brand small { font-size: 11.5px; color: var(--text-3); }
+
+.field { display: block; margin-bottom: 15px; }
+.field > span { display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+.field input, .field select {
+  width: 100%; height: 44px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--bg-2); color: var(--text);
+  font: inherit; font-size: 14px; outline: none;
+  transition: border-color .16s, box-shadow .16s;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.field input::placeholder { color: var(--text-3); }
+
+.field-with-button { position: relative; }
+.field-with-button input { padding-inline-end: 46px; }
+.reveal {
+  position: absolute; inset-inline-end: 6px; top: 6px;
+  width: 32px; height: 32px; border: 0; border-radius: 9px;
+  background: var(--surface-3); color: var(--text-2);
+  display: grid; place-items: center; font-size: 15px;
+}
+.reveal:hover { color: var(--text); }
+.reveal svg { width: 17px; height: 17px; }
+
+.btn.wide { width: 100%; justify-content: center; height: 46px; margin-top: 6px; }
+
+.auth-error {
+  margin: 0 0 14px; padding: 11px 14px;
+  border: 1px solid rgba(255, 59, 92, .4); border-radius: 11px;
+  background: rgba(255, 59, 92, .12); color: #ffc9d3;
+  font-size: 13px;
+}
+
+.auth-foot { margin: 20px 0 0; text-align: center; font-size: 12px; color: var(--text-3); }
+
+/* ---------------------------------------------------------------- setup --- */
+
+.setup-text { margin: 0 0 18px; font-size: 14px; line-height: 1.7; color: var(--text-2); }
+.sql-box { position: relative; }
+.sql-box .btn { position: absolute; top: 10px; inset-inline-end: 10px; height: 32px; padding: 0 14px; font-size: 12.5px; }
+.sql-box pre {
+  margin: 0; padding: 18px; max-height: 320px; overflow: auto;
+  border: 1px solid var(--line); border-radius: 14px;
+  background: var(--bg-2); color: #cfd6e8;
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 12px; line-height: 1.65; white-space: pre;
+}
+.setup-actions { display: flex; align-items: center; gap: 14px; margin-top: 18px; }
+.setup-status { font-size: 13px; color: var(--text-2); }

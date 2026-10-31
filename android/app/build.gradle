@@ -1,0 +1,29 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.smartlive.tv'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.smartlive.tv"
+        minSdk 21          // Android 5 - covers old TV boxes
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Debug-signed so the APK installs by sideload without extra steps.
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

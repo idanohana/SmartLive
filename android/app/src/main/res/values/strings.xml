@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SmartLive</string>
+    <string name="setup_hint">הזן את כתובת השרת של SmartLive ברשת שלך</string>
+    <string name="server_hint">192.168.1.10:4321</string>
+    <string name="connect">התחבר</string>
+    <string name="bad_address">הכתובת לא תקינה. דוגמה: 192.168.1.10:4321</string>
+    <string name="cannot_reach">לא הצלחנו להתחבר לשרת. בדוק שהמחשב דולק ושהכתובת נכונה.</string>
+</resources>

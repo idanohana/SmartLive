@@ -1,0 +1,17 @@
+{
+  "name": "smartlive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SmartLive - a clean, fast web UI for your IPTV live channels",
+  "type": "commonjs",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mpegts.js": "^1.8.0"
+  }
+}

@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">SmartLive</string>
     <string name="setup_hint">כתובת השרת. אפשר להשאיר את ברירת המחדל, או להצביע לשרת אחר.</string>
-    <string name="server_hint">smarlive.vercel.app</string>
+    <string name="server_hint">smartv-il.live</string>
     <string name="connect">התחבר</string>
-    <string name="bad_address">הכתובת לא תקינה. דוגמה: smarlive.vercel.app</string>
+    <string name="bad_address">הכתובת לא תקינה. דוגמה: smartv-il.live</string>
     <string name="cannot_reach">לא הצלחנו להתחבר לשרת. בדוק את החיבור לאינטרנט ואת הכתובת.</string>
 </resources>

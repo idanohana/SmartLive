@@ -38,7 +38,7 @@ public class MainActivity extends Activity {
      * a fresh install. The setup screen (MENU key, or any failure to connect)
      * overrides it without needing a new build.
      */
-    private static final String DEFAULT_SERVER = "https://smarlive.vercel.app";
+    private static final String DEFAULT_SERVER = "https://smartv-il.live";
 
     private WebView web;
     private LinearLayout setup;

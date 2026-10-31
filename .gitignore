@@ -10,3 +10,9 @@ android/local.properties
 
 # Promo script - holds a live ElevenLabs key inline; keep it out of the repo
 add_voiceover.py
+
+# Filled-in env values for the hosting panel - local only
+cpanel-env.txt
+
+# Deployment bundle - just a zip of the repo, no need to version it
+dist/*.zip

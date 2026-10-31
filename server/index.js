@@ -14,6 +14,9 @@ const vod = require('./vod');
 
 const app = express();
 app.disable('x-powered-by');
+// Hosted behind the provider's proxy: without this, req.secure is always false
+// and the session cookie never gets its Secure flag.
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '64kb' }));
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
@@ -76,7 +79,7 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const row = await accounts.authenticate(req.body?.username, req.body?.password);
     if (!row) return res.status(401).json({ error: 'שם משתמש או סיסמה שגויים' });
-    auth.setSessionCookie(res, auth.createToken(row));
+    auth.setSessionCookie(res, auth.createToken(row), req);
     const user = await accounts.getUserById(row.id);
     res.json({ user });
   } catch (err) {
@@ -84,8 +87,8 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.post('/api/auth/logout', (_req, res) => {
-  auth.clearSessionCookie(res);
+app.post('/api/auth/logout', (req, res) => {
+  auth.clearSessionCookie(res, req);
   res.json({ ok: true });
 });
 
@@ -483,6 +486,9 @@ async function pumpStream(client, id, res, entry, controller) {
       res.status(200).set({
         'Content-Type': upstream.headers.get('content-type') || 'video/mp2t',
         'Cache-Control': 'no-store, no-transform',
+        // A hosting proxy that buffers this response would stall live TV until
+        // its buffer fills; these tell nginx and friends to pass it straight on.
+        'X-Accel-Buffering': 'no',
         Connection: 'keep-alive',
       });
       res.flushHeaders();
@@ -589,7 +595,9 @@ app.use((req, res) => {
   // On a serverless host the platform owns the socket: export the app instead.
   if (process.env.VERCEL) return;
 
-  app.listen(config.port, '0.0.0.0', () => {
+  // Managed Node hosting (cPanel/Passenger, Railway, Render...) hands the port
+  // over in PORT and puts its own proxy in front, so bind what we were given.
+  app.listen(config.port, () => {
     console.log(`  SmartLive  ->  http://localhost:${config.port}`);
     console.log(`  admin      ->  http://localhost:${config.port}/admin`);
 

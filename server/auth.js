@@ -74,13 +74,20 @@ function parseCookies(header) {
   return out;
 }
 
-function setSessionCookie(res, token) {
-  const maxAge = config.sessionDays * 24 * 60 * 60;
-  res.setHeader('Set-Cookie', `${COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`);
+// Over HTTPS the cookie must be Secure; over plain http on a LAN it must not
+// be, or the browser drops it and nobody can sign in.
+function cookieFlags(req) {
+  const https = Boolean(req?.secure) || req?.headers?.['x-forwarded-proto'] === 'https';
+  return `Path=/; HttpOnly; SameSite=Lax${https ? '; Secure' : ''}`;
 }
 
-function clearSessionCookie(res) {
-  res.setHeader('Set-Cookie', `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+function setSessionCookie(res, token, req) {
+  const maxAge = config.sessionDays * 24 * 60 * 60;
+  res.setHeader('Set-Cookie', `${COOKIE}=${token}; ${cookieFlags(req)}; Max-Age=${maxAge}`);
+}
+
+function clearSessionCookie(res, req) {
+  res.setHeader('Set-Cookie', `${COOKIE}=; ${cookieFlags(req)}; Max-Age=0`);
 }
 
 module.exports = {

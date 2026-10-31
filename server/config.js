@@ -35,11 +35,19 @@ function requireEnv(name) {
 function sessionSecret() {
   const fromEnv = (process.env.SESSION_SECRET || '').trim();
   if (fromEnv) return fromEnv;
+
   const file = path.join(root, '.session-secret');
-  if (fs.existsSync(file)) return fs.readFileSync(file, 'utf8').trim();
-  const generated = crypto.randomBytes(48).toString('hex');
-  fs.writeFileSync(file, generated, { mode: 0o600 });
-  return generated;
+  try {
+    if (fs.existsSync(file)) return fs.readFileSync(file, 'utf8').trim();
+    const generated = crypto.randomBytes(48).toString('hex');
+    fs.writeFileSync(file, generated, { mode: 0o600 });
+    return generated;
+  } catch {
+    // Read-only filesystem (serverless). A per-instance secret still works,
+    // but everyone is signed out whenever the instance recycles.
+    console.warn('  ⚠  SESSION_SECRET is not set and cannot be stored - sign-ins will not survive a restart.');
+    return crypto.randomBytes(48).toString('hex');
+  }
 }
 
 module.exports = {

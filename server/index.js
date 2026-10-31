@@ -586,6 +586,9 @@ app.use((req, res) => {
     console.log('\n  ⚠  הטבלאות ב-Supabase עדיין לא קיימות — פתח http://localhost:' + config.port + '/setup\n');
   }
 
+  // On a serverless host the platform owns the socket: export the app instead.
+  if (process.env.VERCEL) return;
+
   app.listen(config.port, '0.0.0.0', () => {
     console.log(`  SmartLive  ->  http://localhost:${config.port}`);
     console.log(`  admin      ->  http://localhost:${config.port}/admin`);
@@ -602,3 +605,5 @@ app.use((req, res) => {
     console.log('');
   });
 })();
+
+module.exports = app;

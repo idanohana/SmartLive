@@ -33,6 +33,13 @@ public class MainActivity extends Activity {
     private static final String PREFS = "smartlive";
     private static final String KEY_SERVER = "server";
 
+    /**
+     * Where the app points when nothing else is set, so it works straight off
+     * a fresh install. The setup screen (MENU key, or any failure to connect)
+     * overrides it without needing a new build.
+     */
+    private static final String DEFAULT_SERVER = "https://smarlive.vercel.app";
+
     private WebView web;
     private LinearLayout setup;
     private EditText serverInput;
@@ -70,13 +77,9 @@ public class MainActivity extends Activity {
             web.loadUrl(url + "/tv");
         });
 
-        String saved = prefs().getString(KEY_SERVER, null);
-        if (saved == null) {
-            showSetup(true, null);
-        } else {
-            serverInput.setText(saved);
-            web.loadUrl(saved + "/tv");
-        }
+        String server = prefs().getString(KEY_SERVER, DEFAULT_SERVER);
+        serverInput.setText(server);
+        web.loadUrl(server + "/tv");
     }
 
     private SharedPreferences prefs() {
@@ -186,6 +189,11 @@ public class MainActivity extends Activity {
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // MENU is how you get at the server address once one is already set.
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            showSetup(setup.getVisibility() != View.VISIBLE, null);
+            return true;
+        }
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (fullscreenView != null) {
                 web.getWebChromeClient().onHideCustomView();

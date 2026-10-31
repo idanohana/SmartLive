@@ -21,11 +21,17 @@ function loadEnvFile(file) {
 const root = path.join(__dirname, '..');
 loadEnvFile(path.join(root, '.env'));
 
+// Missing settings are collected rather than fatal: on managed hosting a
+// process that exits on boot shows up as a bare 503, with the reason buried in
+// a log file. The server stays up and says what is missing instead.
+const missing = [];
+
 function requireEnv(name) {
   const value = (process.env[name] || '').trim();
   if (!value) {
-    console.error(`\n  Missing ${name}. Copy .env.example to .env and fill it in.\n`);
-    process.exit(1);
+    missing.push(name);
+    console.error(`  ✗ Missing ${name}`);
+    return '';
   }
   return value;
 }
@@ -74,4 +80,7 @@ module.exports = {
   },
 
   defaultMaxStreams: Number(process.env.MAX_STREAMS) || 1,
+
+  // Empty when everything needed is present.
+  missing,
 };

@@ -19,6 +19,25 @@ app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '64kb' }));
 
+// Without its settings the app cannot do anything useful, so every route says
+// which ones are missing. Far easier to act on than a blank 503.
+if (config.missing.length) {
+  app.use((req, res) => {
+    const list = config.missing.map((name) => `<li><code>${name}</code></li>`).join('');
+    res.status(503);
+    if (wantsJson(req)) return res.json({ error: 'missing configuration', missing: config.missing });
+    res.type('html').send(`<!doctype html><html lang="he" dir="rtl"><meta charset="utf-8">
+<title>SmartLive - חסרות הגדרות</title>
+<body style="font-family:system-ui,sans-serif;background:#0b0e16;color:#eef1f8;padding:48px;line-height:1.7">
+<h1 style="margin:0 0 8px">חסרות הגדרות</h1>
+<p style="color:#a8b0c4;margin:0 0 20px">השרת רץ, אבל משתני הסביבה האלה לא הוגדרו:</p>
+<ul style="color:#ffd9e0;font-size:18px">${list}</ul>
+<p style="color:#a8b0c4">הוסף אותם במסך האפליקציה (Environment variables) או בקובץ <code>.env</code>
+בתיקיית הפרויקט, ואז לחץ <b>Restart</b>.</p>
+</body></html>`);
+  });
+}
+
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const VIEWS_DIR = path.join(__dirname, '..', 'views');
 const view = (name) => path.join(VIEWS_DIR, name);

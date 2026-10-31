@@ -36,6 +36,28 @@ function toast(message, kind = '') {
 
 const randomPassword = () => Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 6);
 
+/* -------------------------------------------------------------- packages --- */
+
+let genreList = [];
+
+/** Draws the package chips, with `selected` ticked. Empty selection = all. */
+function renderGenreChips(box, selected = []) {
+  if (!box) return;
+  box.innerHTML = '';
+  for (const genre of genreList) {
+    const chip = document.createElement('label');
+    chip.className = 'chip';
+    chip.innerHTML = `<input type="checkbox" value="${genre.id}"><span>${genre.icon} ${genre.label}</span>`;
+    const input = chip.querySelector('input');
+    input.checked = selected.includes(genre.id);
+    chip.classList.toggle('on', input.checked);
+    input.addEventListener('change', () => chip.classList.toggle('on', input.checked));
+    box.appendChild(chip);
+  }
+}
+
+const selectedGenres = (box) => $$('input:checked', box).map((i) => i.value);
+
 function formatDate(value) {
   if (!value) return 'טרם התחבר';
   const d = new Date(value);
@@ -149,11 +171,22 @@ function renderUser(user) {
     } catch (err) { toast(err.message, 'err'); }
   });
 
+  const access = user.access || { live: true, vod: true, genres: [] };
+  const badges = $('.user-name', card);
+  if (!access.live) badges.insertAdjacentHTML('beforeend', '<span class="badge off-badge">בלי לייב</span>');
+  if (!access.vod) badges.insertAdjacentHTML('beforeend', '<span class="badge off-badge">בלי VOD</span>');
+  if (access.genres.length) {
+    badges.insertAdjacentHTML('beforeend', `<span class="badge">${access.genres.length} חבילות</span>`);
+  }
+
   $('.u-edit', card).addEventListener('click', () => {
     form.hidden = !form.hidden;
     $('.e-display', form).value = user.displayName || '';
     $('.e-role', form).value = user.role;
     $('.e-password', form).value = '';
+    $('.e-live', form).checked = access.live;
+    $('.e-vod', form).checked = access.vod;
+    renderGenreChips($('.e-genres', form), access.genres);
   });
   $('.e-cancel', form).addEventListener('click', () => { form.hidden = true; });
 
@@ -162,6 +195,9 @@ function renderUser(user) {
     const patch = {
       displayName: $('.e-display', form).value,
       role: $('.e-role', form).value,
+      hasLive: $('.e-live', form).checked,
+      hasVod: $('.e-vod', form).checked,
+      genres: selectedGenres($('.e-genres', form)),
     };
     const password = $('.e-password', form).value.trim();
     if (password) patch.password = password;
@@ -236,6 +272,9 @@ createForm.addEventListener('submit', async (ev) => {
     displayName: $('#nuDisplay').value.trim(),
     password: $('#nuPassword').value,
     role: $('#nuRole').value,
+    hasLive: $('#nuLive').checked,
+    hasVod: $('#nuVod').checked,
+    genres: selectedGenres($('#nuGenres')),
   };
   const url = $('#nuUrl').value.trim();
   if (url) body.playlist = { url, name: $('#nuPlName').value.trim(), maxStreams: Number($('#nuMax').value || 1) };
@@ -255,5 +294,9 @@ $('#logout').addEventListener('click', async () => {
   await api('/api/auth/logout', { method: 'POST' });
   location.href = '/login';
 });
+
+api('/api/admin/genres')
+  .then((list) => { genreList = list; renderGenreChips($('#nuGenres')); })
+  .catch(() => { /* the chips just stay empty, which means "all packages" */ });
 
 load().catch((err) => toast(err.message, 'err'));

@@ -11,6 +11,7 @@ const auth = require('./auth');
 const accounts = require('./accounts');
 const xtream = require('./xtream');
 const vod = require('./vod');
+const catalog = require('./catalog');
 
 const app = express();
 app.disable('x-powered-by');
@@ -138,6 +139,13 @@ app.post('/api/auth/password', requireAuth, async (req, res) => {
 });
 
 /* ---------------------------------------------------------- admin routes --- */
+
+// The packages an admin can hand out. Static, because they come from how
+// channel names are classified rather than from any one playlist.
+app.get('/api/admin/genres', requireAuth, requireAdmin, (_req, res) => {
+  res.json(catalog.GENRES.concat({ id: 'other', label: 'שונות', icon: '📺' })
+    .map((g) => ({ id: g.id, label: g.label, icon: g.icon })));
+});
 
 app.get('/api/admin/users', requireAuth, requireAdmin, async (_req, res) => {
   try {
@@ -289,29 +297,70 @@ app.get('/api/account', requireAuth, async (req, res) => {
 
 // The raw catalog carries the provider's logo host on every channel, so the
 // browser gets opaque /logo/<id> paths instead and the server resolves them.
-function publicCatalog(catalog) {
+function publicCatalog(catalog, user) {
+  const channels = catalog.channels
+    .filter((ch) => accounts.allowsGenre(user, ch.genre))
+    .map((ch) => ({ ...ch, logo: ch.logo ? `/logo/${ch.id}` : null }));
+
+  // The package list has to shrink with the channels, or the sidebar offers
+  // categories that come back empty.
+  const counts = {};
+  for (const ch of channels) counts[ch.genre] = (counts[ch.genre] || 0) + 1;
+
   return {
     ...catalog,
-    channels: catalog.channels.map((ch) => ({ ...ch, logo: ch.logo ? `/logo/${ch.id}` : null })),
+    channels,
+    genres: catalog.genres.filter((g) => counts[g.id]).map((g) => ({ ...g, count: counts[g.id] })),
   };
 }
 
-app.get('/api/channels', requireAuth, async (req, res) => {
+/** Gatekeeper for everything that serves live TV. */
+function requireLive(req, res, next) {
+  if (!req.user?.access?.live) {
+    return res.status(403).json({ error: 'החשבון הזה לא כולל שידורים חיים', noLive: true });
+  }
+  next();
+}
+
+/** Gatekeeper for the movies & series section. */
+function requireVod(req, res, next) {
+  if (!req.user?.access?.vod) {
+    return res.status(403).json({ error: 'החשבון הזה לא כולל סרטים וסדרות', noVod: true });
+  }
+  next();
+}
+
+/**
+ * A channel id in a URL proves nothing, so every per-channel route checks the
+ * channel against the viewer's packages before doing any work.
+ */
+async function allowedChannel(req, res, playlist, id) {
+  const catalog = await xtream.clientFor(playlist).getCatalog();
+  const channel = catalog.channels.find((c) => String(c.id) === String(id));
+  if (!channel || !accounts.allowsGenre(req.user, channel.genre)) {
+    res.status(404).json({ error: 'הערוץ לא נמצא' });
+    return null;
+  }
+  return channel;
+}
+
+app.get('/api/channels', requireAuth, requireLive, async (req, res) => {
   const playlist = await resolvePlaylist(req, res);
   if (!playlist) return;
   try {
-    res.json(publicCatalog(await xtream.clientFor(playlist).getCatalog()));
+    res.json(publicCatalog(await xtream.clientFor(playlist).getCatalog(), req.user));
   } catch (err) {
     apiError(res, err, 502, req);
   }
 });
 
-app.get('/api/epg/:id', requireAuth, async (req, res) => {
+app.get('/api/epg/:id', requireAuth, requireLive, async (req, res) => {
   const playlist = await resolvePlaylist(req, res);
   if (!playlist) return;
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: 'bad stream id' });
   try {
+    if (!(await allowedChannel(req, res, playlist, id))) return;
     res.json(await xtream.clientFor(playlist).getChannelEpg(id));
   } catch (err) {
     apiError(res, err);
@@ -327,28 +376,28 @@ app.post('/api/refresh', requireAuth, async (req, res) => {
 
 /* ------------------------------------------------------- movies & series --- */
 
-app.get('/api/vod/shelves', requireAuth, async (_req, res) => {
+app.get('/api/vod/shelves', requireAuth, requireVod, async (_req, res) => {
   try { res.json(await vod.shelves()); } catch (err) { apiError(res, err); }
 });
 
-app.get('/api/vod/search', requireAuth, async (req, res) => {
+app.get('/api/vod/search', requireAuth, requireVod, async (req, res) => {
   const q = String(req.query.q || '').slice(0, 120);
   const type = ['movie', 'tv'].includes(req.query.type) ? req.query.type : 'all';
   if (q.trim().length < 2) return res.json([]);
   try { res.json(await vod.search(q, type)); } catch (err) { apiError(res, err); }
 });
 
-app.get('/api/vod/title/:id', requireAuth, async (req, res) => {
+app.get('/api/vod/title/:id', requireAuth, requireVod, async (req, res) => {
   try { res.json(await vod.title(String(req.params.id))); } catch (err) { apiError(res, err, 404); }
 });
 
-app.get('/api/vod/episodes/:id', requireAuth, async (req, res) => {
+app.get('/api/vod/episodes/:id', requireAuth, requireVod, async (req, res) => {
   try { res.json(await vod.episodes(String(req.params.id))); } catch (err) { apiError(res, err); }
 });
 
 // The player frame points here; we redirect to the provider instead of
 // handing its address to the page.
-app.get('/play/:type/:id/:season?/:episode?', requireAuth, (req, res) => {
+app.get('/play/:type/:id/:season?/:episode?', requireAuth, requireVod, (req, res) => {
   try {
     res.redirect(302, vod.embedUrl({
       type: req.params.type === 'tv' ? 'tv' : 'movie',
@@ -367,7 +416,7 @@ const logoCache = new Map();
 const LOGO_TTL = 12 * 60 * 60 * 1000;
 const LOGO_CACHE_MAX = 400;
 
-app.get('/logo/:id', requireAuth, async (req, res) => {
+app.get('/logo/:id', requireAuth, requireLive, async (req, res) => {
   const playlist = await resolvePlaylist(req, res);
   if (!playlist) return;
 
@@ -375,8 +424,9 @@ app.get('/logo/:id', requireAuth, async (req, res) => {
   // so the provider's logo host never appears in the browser's network log.
   let raw = null;
   try {
-    const catalog = await xtream.clientFor(playlist).getCatalog();
-    raw = catalog.channels.find((c) => String(c.id) === String(req.params.id))?.logo || null;
+    const channel = await allowedChannel(req, res, playlist, req.params.id);
+    if (!channel) return;
+    raw = channel.logo || null;
   } catch {
     return res.status(502).end();
   }
@@ -428,12 +478,20 @@ function releaseOldest(playlistId, limit) {
   }
 }
 
-app.get('/stream/:id', requireAuth, async (req, res) => {
+app.get('/stream/:id', requireAuth, requireLive, async (req, res) => {
   const playlist = await resolvePlaylist(req, res);
   if (!playlist) return;
 
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).end();
+
+  // The one check that really counts: without it, guessing a stream id would
+  // play a channel the account was never given.
+  try {
+    if (!(await allowedChannel(req, res, playlist, id))) return;
+  } catch (err) {
+    return apiError(res, err, 502, req);
+  }
 
   const client = xtream.clientFor(playlist);
   const controller = new AbortController();
@@ -539,6 +597,12 @@ app.get('/setup', (_req, res) => res.sendFile(view('setup.html')));
 
 app.get('/api/setup/sql', (_req, res) => {
   res.type('text/plain').sendFile(path.join(__dirname, '..', 'supabase', 'schema.sql'));
+});
+
+// Served so an existing installation can copy the access migration straight
+// out of the admin screen instead of digging through the repo.
+app.get('/api/setup/sql/access', requireAuth, requireAdmin, (_req, res) => {
+  res.type('text/plain').sendFile(path.join(__dirname, '..', 'supabase', 'migration-access.sql'));
 });
 
 app.get('/api/setup/status', async (_req, res) => {

@@ -22,8 +22,32 @@ function publicUser(row, playlists = []) {
     active: row.active,
     createdAt: row.created_at,
     lastLoginAt: row.last_login_at,
+    access: access(row),
     playlists: playlists.map(publicPlaylist),
   };
+}
+
+/**
+ * What this account may watch. The columns are read defensively so an install
+ * that has not run migration-access.sql yet behaves as "everything allowed"
+ * instead of locking people out.
+ */
+function access(row) {
+  const genres = Array.isArray(row.allowed_genres) ? row.allowed_genres.filter(Boolean) : [];
+  return {
+    live: row.has_live !== false,
+    vod: row.has_vod !== false,
+    // An empty list means no restriction, which is what an admin who never
+    // touched the packages expects.
+    genres,
+  };
+}
+
+/** Does this account have access to a channel of that genre? */
+function allowsGenre(user, genre) {
+  if (!user?.access?.live) return false;
+  const { genres } = user.access;
+  return !genres.length || genres.includes(genre);
 }
 
 function publicPlaylist(row) {
@@ -94,18 +118,42 @@ async function authenticate(username, password) {
   return row;
 }
 
-async function createUser({ username, password, displayName, role = 'user' }) {
+const MIGRATION_HINT = 'כדי להגדיר הרשאות צריך להריץ קודם את supabase/migration-access.sql ב-Supabase';
+
+function isMissingAccessColumn(err) {
+  return /has_live|has_vod|allowed_genres/.test(err?.message || '');
+}
+
+function accessColumns(patch) {
+  const columns = {};
+  if (patch.hasLive !== undefined) columns.has_live = Boolean(patch.hasLive);
+  if (patch.hasVod !== undefined) columns.has_vod = Boolean(patch.hasVod);
+  if (patch.genres !== undefined) {
+    const list = Array.isArray(patch.genres) ? patch.genres.filter((g) => typeof g === 'string' && g) : [];
+    columns.allowed_genres = list.length ? list : null;
+  }
+  return columns;
+}
+
+async function createUser({ username, password, displayName, role = 'user', ...rest }) {
   const clean = String(username || '').trim();
   if (!/^[\w.@-]{3,40}$/.test(clean)) throw new Error('שם המשתמש חייב להיות 3-40 תווים (אותיות, ספרות, נקודה, מקף)');
   if (String(password || '').length < 4) throw new Error('הסיסמה חייבת להיות 4 תווים לפחות');
   if (await rawUserByUsername(clean)) throw new Error('שם המשתמש כבר תפוס');
 
-  const row = await db.insert(USERS, {
-    username: clean,
-    password_hash: auth.hashPassword(String(password)),
-    display_name: displayName?.trim() || null,
-    role: role === 'admin' ? 'admin' : 'user',
-  });
+  let row;
+  try {
+    row = await db.insert(USERS, {
+      username: clean,
+      password_hash: auth.hashPassword(String(password)),
+      display_name: displayName?.trim() || null,
+      role: role === 'admin' ? 'admin' : 'user',
+      ...accessColumns(rest),
+    });
+  } catch (err) {
+    if (isMissingAccessColumn(err)) throw new Error(MIGRATION_HINT);
+    throw err;
+  }
   return publicUser(row, []);
 }
 
@@ -118,8 +166,16 @@ async function updateUser(id, patch) {
     if (String(patch.password).length < 4) throw new Error('הסיסמה חייבת להיות 4 תווים לפחות');
     next.password_hash = auth.hashPassword(String(patch.password));
   }
+  Object.assign(next, accessColumns(patch));
   if (!Object.keys(next).length) return getUserById(id, { fresh: true });
-  await db.update(USERS, { id: `eq.${id}` }, next);
+
+  try {
+    await db.update(USERS, { id: `eq.${id}` }, next);
+  } catch (err) {
+    // The access columns only exist after the migration has been run.
+    if (isMissingAccessColumn(err)) throw new Error(MIGRATION_HINT);
+    throw err;
+  }
   invalidate(id);
   return getUserById(id, { fresh: true });
 }
@@ -256,4 +312,5 @@ module.exports = {
   playlistsFor,
   parsePlaylist,
   ensureSeedAdmin,
+  allowsGenre,
 };

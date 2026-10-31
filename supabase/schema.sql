@@ -34,3 +34,9 @@ create unique index if not exists app_users_username_lower_idx on public.app_use
 -- means the publishable key can read nothing.
 alter table public.app_users enable row level security;
 alter table public.playlists  enable row level security;
+
+-- Per-user access (see migration-access.sql for existing installations).
+alter table public.app_users
+  add column if not exists has_live boolean not null default true,
+  add column if not exists has_vod  boolean not null default true,
+  add column if not exists allowed_genres text[];

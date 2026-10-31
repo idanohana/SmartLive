@@ -103,6 +103,15 @@ async function boot() {
   renderSkeleton();
 
   if (!(await loadMe())) return;
+
+  // An account without live TV goes straight to the movies section; the live
+  // half of the app is not just hidden, the server refuses it too.
+  if (!access().live) {
+    setMode('vod');
+    history.replaceState(null, '', '#/vod');
+    return;
+  }
+
   loadAccount();
 
   try {
@@ -132,6 +141,9 @@ async function boot() {
   }
 }
 
+/** What this account may watch; everything is allowed until we know better. */
+const access = () => state.me?.access || { live: true, vod: true, genres: [] };
+
 /** Who is signed in, and which playlists they have. */
 async function loadMe() {
   try {
@@ -147,6 +159,12 @@ async function loadMe() {
     $('#userName').textContent = user.displayName || user.username;
     $('#userAvatar').textContent = (user.displayName || user.username).slice(0, 2).toUpperCase();
     $('#adminLink').hidden = user.role !== 'admin';
+
+    // Only offer the halves of the app this account actually has.
+    $$('#modeSwitch button').forEach((b) => {
+      b.hidden = b.dataset.mode === 'live' ? !access().live : !access().vod;
+    });
+    $('#modeSwitch').hidden = !access().live || !access().vod;
 
     const picker = $('#playlistPicker');
     picker.hidden = playlists.length < 2;
@@ -697,6 +715,9 @@ function armIdle() {
 /* --------------------------------------------------------------- modes --- */
 
 function setMode(mode) {
+  // A hash someone typed by hand must not open a section they do not have.
+  if (mode === 'vod' && !access().vod) mode = 'live';
+  if (mode === 'live' && !access().live) mode = 'vod';
   state.mode = mode;
   $$('#modeSwitch button').forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
   $('#liveView').hidden = mode !== 'live';

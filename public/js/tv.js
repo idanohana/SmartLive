@@ -206,9 +206,21 @@ async function boot() {
   }
 }
 
+/** What this account may watch; everything is allowed until we know better. */
+const access = () => state.user?.access || { live: true, vod: true, genres: [] };
+
 async function enterApp() {
   const playlists = state.user?.playlists || [];
   state.playlistId = playlists[0]?.id || null;
+
+  // Hide the menu entries this account does not have, so the remote never
+  // lands on a section that would only answer "not included".
+  for (const btn of $$('.nav-item')) {
+    const nav = btn.dataset.nav;
+    if (nav === 'live') btn.hidden = !access().live;
+    if (nav === 'movies' || nav === 'series') btn.hidden = !access().vod;
+  }
+
   showScreen('home');
   await loadLibrary();
   renderSection('home');
@@ -217,7 +229,7 @@ async function enterApp() {
 async function loadLibrary() {
   const jobs = [];
 
-  if (state.playlistId) {
+  if (state.playlistId && access().live) {
     jobs.push(api('/api/channels').then((catalog) => {
       state.channels = catalog.channels;
       state.byId = new Map(catalog.channels.map((c) => [c.id, c]));
@@ -225,8 +237,10 @@ async function loadLibrary() {
     }).catch((err) => toast(`טעינת הערוצים נכשלה: ${err.message}`)));
   }
 
-  jobs.push(api('/api/vod/shelves').then((shelves) => { state.shelves = shelves; })
-    .catch(() => { /* the VOD section just stays empty */ }));
+  if (access().vod) {
+    jobs.push(api('/api/vod/shelves').then((shelves) => { state.shelves = shelves; })
+      .catch(() => { /* the VOD section just stays empty */ }));
+  }
 
   await Promise.all(jobs);
 }

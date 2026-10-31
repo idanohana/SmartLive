@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/css/styles.css?v=8" />
-<link rel="stylesheet" href="/css/admin.css?v=8" />
+<link rel="stylesheet" href="/css/styles.css?v=9" />
+<link rel="stylesheet" href="/css/admin.css?v=9" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236366f1'/%3E%3Cpath d='M26 20l18 12-18 12z' fill='white'/%3E%3C/svg%3E" />
 </head>
 <body>
@@ -65,6 +65,20 @@
             <option value="admin">מנהל</option>
           </select>
         </label>
+      </div>
+
+      <div class="divider"><span>מה החשבון כולל</span></div>
+
+      <div class="access-box">
+        <div class="access-row">
+          <label class="switch"><input type="checkbox" id="nuLive" checked /><span>שידורים חיים</span></label>
+          <label class="switch"><input type="checkbox" id="nuVod" checked /><span>סרטים וסדרות</span></label>
+        </div>
+        <div class="access-packages">
+          <span class="access-label">חבילות ערוצים</span>
+          <div class="chips" id="nuGenres"></div>
+          <p class="access-hint">בלי סימון = כל החבילות</p>
+        </div>
       </div>
 
       <div class="divider"><span>פלייליסט לייב (אופציונלי)</span></div>
@@ -139,6 +153,20 @@
           <input class="e-password" type="text" spellcheck="false" placeholder="להשאיר ריק = בלי שינוי" />
         </label>
       </div>
+
+      <div class="access-box">
+        <div class="access-row">
+          <span class="access-label">מה החשבון כולל</span>
+          <label class="switch"><input type="checkbox" class="e-live" /><span>שידורים חיים</span></label>
+          <label class="switch"><input type="checkbox" class="e-vod" /><span>סרטים וסדרות</span></label>
+        </div>
+        <div class="access-packages">
+          <span class="access-label">חבילות ערוצים</span>
+          <div class="chips e-genres"></div>
+          <p class="access-hint">בלי סימון = כל החבילות</p>
+        </div>
+      </div>
+
       <div class="form-actions">
         <button type="button" class="btn e-add-playlist">+ הוסף פלייליסט</button>
         <div class="grow"></div>
@@ -187,6 +215,6 @@
   </div>
 </template>
 
-<script src="/js/admin.js?v=8"></script>
+<script src="/js/admin.js?v=9"></script>
 </body>
 </html>

@@ -102,3 +102,29 @@
   .user-actions { width: 100%; }
   .admin { padding: 18px 14px 50px; }
 }
+
+/* ------------------------------------------------------ access controls --- */
+
+.access-box {
+  margin: 14px 0 4px; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--surface);
+}
+.access-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.access-label { font-size: 12.5px; font-weight: 600; color: var(--text-3); }
+
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.switch input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+
+.access-packages { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+.chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+.chip {
+  display: inline-flex; align-items: center; cursor: pointer;
+  padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface-2); color: var(--text-2); font-size: 13px;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.chip input { display: none; }
+.chip:hover { border-color: #3b4258; color: var(--text); }
+.chip.on { background: var(--accent-soft); border-color: rgba(99, 102, 241, .55); color: #fff; }
+.access-hint { margin: 9px 0 0; font-size: 12px; color: var(--text-3); }
